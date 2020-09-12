@@ -1,0 +1,192 @@
+#include <iostream>
+#include <string>
+#include <utility>
+
+using namespace std;
+
+//Обьявление структуры
+struct Car {
+public:
+	string brand;
+	string model;
+	string complect;
+	string segment;
+	string body;
+	double volume;
+	double power;
+	int year;
+	double price;
+	double koef;
+};
+
+// Подсчёт коэфициента оптимальности
+double Koef(Car a) {
+	a.koef = a.power / a.price;
+	return a.koef;
+}
+
+void display(Car a) {
+	cout << "Марка автомобиля: " << a.brand << endl
+		<< "Название модели: " << a.model << endl
+		<< "Название комплектации: " << a.complect << endl
+		<< "Рыночный сегмент: " << a.segment << endl
+		<< "Тип автомобильного кузова: " << a.body << endl
+		<< "Объем двигателя в литрах: " << a.volume << endl
+		<< "Мощность двигателя в л.с. : " << a.power << endl
+		<< "Год выпуска: " << a.year << endl
+		<< "Стоимость в рублях: " << int(a.price) << endl << "-----------------------" << endl;
+}
+
+int main()
+{
+	setlocale(LC_ALL,"ru");
+	// Инициализация обьектов
+	Car a;
+	a.brand = "brand_1";
+	a.model = "model_1";
+	a.complect = "coomplect_1";
+	a.segment = "segment_1";
+	a.body = "body_1";
+	a.volume = 3.0;
+	a.power = 249;
+	a.year = 2017;
+	a.price = 2920000;
+	a.koef = a.power / a.price;
+
+	Car b;
+	b.brand = "brand_2";
+	b.model = "model_2";
+	b.complect = "coomplect_2_1";
+	b.segment = "segment_2";
+	b.body = "body_2";
+	b.volume = 3.5;
+	b.power = 272;
+	b.year = 2010;
+	b.price = 1150000;
+	b.koef = b.power / b.price;
+
+
+	Car c;
+	c.brand = "brand_3";
+	c.model = "model_3";
+	c.complect = "coomplect_3";
+	c.segment = "segment_3";
+	c.body = "body_3";
+	c.volume = 4.5;
+	c.power = 235;
+	c.year = 2014;
+	c.price = 2465000;
+	c.koef = c.power / c.price;
+
+
+	Car d;
+	d.brand = "brand_4";
+	d.model = "model_4";
+	d.complect = "coomplect_4";
+	d.segment = "segment_4";
+	d.body = "body_4";
+	d.volume = 4.4;
+	d.power = 320;
+	d.year = 2004;
+	d.price = 480000;
+	d.koef = d.power / d.price;
+
+
+	Car e;
+	e.brand = "brand_2";
+	e.model = "model_2";
+	e.complect = "coomplect_2_2";
+	e.segment = "segment_2";
+	e.body = "body_2";
+	e.volume = 4.5;
+	e.power = 310;
+	e.year = 2013;
+	e.price = 2150000;
+	e.koef = e.power / e.price;
+
+	cout << "Нажмите (1) чтобы посмотреть всю информацию о машинах и найти оптимальный вариант" << endl
+		 << "Нажмите (2) чтобы ввести с клавиатуры название модели" << endl;
+
+	int pointer;
+	cin >> pointer;
+
+	//Массив содержащий все элементы
+	const int N = 5;
+	Car mas[N] = { a,b,c,d,e };
+	if (pointer == 1) {
+		// Выывод всех обьектов на экран и нахождение максимального коэфициента
+		double max = a.koef;
+		for (auto i : mas) {
+			display(i);
+			if (i.koef > max) {
+				max = i.koef;
+			}
+		}
+
+		// Информация о самом оптимальном обьекте
+		for (auto i : mas) {
+			if (i.koef == max) {
+				cout << "Самый оптимальный экземпляр: " << endl;
+				display(i);
+			}
+		}
+
+		cout << "Самый оптиальный коэфициент: " << max << endl;
+	}
+	else if (pointer == 2) {
+		//Ввод модели с клавиатуры
+
+		cout << "Модели в ассортименте:" << endl;
+		for(auto i : mas){
+			cout << i.brand << endl;
+		}
+
+		cout << "Введите название модели" << endl;
+		string search;
+		cin >> search;
+
+		//Поиск совпадений по бренду
+		cout << "Комплектации данной модели: " << endl;
+		int p = 0;
+		for (auto i : mas) {
+			if (search == i.brand) {
+				p++;
+			}
+		}
+
+		Car *price_array = new Car[p];
+		int p1 = 0;
+		for (Car i : mas) {
+			if (search == i.brand) {
+				price_array[p1] = i;
+				p1++;
+			}
+		}
+
+		for (int startIndex = 0; startIndex < p1 - 1; startIndex++) {
+			int smallestIndex = startIndex;
+
+			for (int currentIndex = startIndex + 1; currentIndex < p1; currentIndex++) {
+				if ((price_array[currentIndex]).price < (price_array[smallestIndex]).price)
+					smallestIndex = currentIndex;
+			}
+
+			std::swap(price_array[startIndex],price_array[smallestIndex]);
+		}
+
+		cout << "Доступные комплектации данной модели: " << endl;
+
+		for (int i = 0; i < p1; i++) {
+			cout << "(*) " << price_array[i].complect << endl;
+			cout << "Цена данной комлектации: " << int(price_array[i].price) << endl << "-----------------" << endl;
+		}
+
+		delete [] price_array;
+
+	}
+	else
+
+		cout << "Введено некорректное значение" << endl;
+
+	return 0;
+}
