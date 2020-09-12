@@ -1,0 +1,162 @@
+#include <iostream>
+#include <string>
+#include <utility>
+#include <fstream>
+#include <Windows.h>
+
+using namespace std;
+
+//Обьявление структуры
+struct car {
+
+	string brand;
+	string model;
+	string complect;
+	string segment;
+	string body;
+	double volume;
+	double power;
+	int year;
+	double price;
+	double koef;
+};
+
+car read_car(ifstream &file) {
+
+	car ncar;
+
+	getline(file, ncar.brand);
+	getline(file, ncar.model);
+	getline(file, ncar.complect);
+	getline(file, ncar.segment);
+	getline(file, ncar.body);
+	file >> ncar.volume;
+	file >> ncar.power;
+	file >> ncar.year;
+	file >> ncar.price;
+	file.get();
+
+	ncar.koef = ncar.power / ncar.price;
+	
+	return ncar;
+}
+
+void display_car(car ncar) {
+	cout << "Марка автомобиля: " << ncar.brand << endl
+		<< "Название модели: " << ncar.model << endl
+		<< "Название комплектации: " << ncar.complect << endl
+		<< "Рыночный сегмент: " << ncar.segment << endl
+		<< "Тип автомобильного кузова: " << ncar.body << endl
+		<< "Объем двигателя в литрах: " << ncar.volume << endl
+		<< "Мощность двигателя в л.с. : " << ncar.power << endl
+		<< "Год выпуска: " << ncar.year << endl
+		<< "Стоимость в рублях: " << int(ncar.price) << endl << "Отношение Мощности двигателя к Стоимости: " << ncar.koef << endl << "----------------------" << endl;
+}
+
+void optimal_car(car acollection[], int n) {
+	double max = acollection[0].koef;
+	int indexOptimalCar = 0;
+	for (int i = 0; i < n; i++) {
+		if (acollection[i].koef > max) {
+			max = acollection[i].koef;
+			indexOptimalCar = i;
+		}
+	}
+	cout << "Наибольшее отношение Мощности двигателя к Стоимости имеет автомобиль со следущими характеристиками: " << endl;
+	display_car(acollection[indexOptimalCar]);
+}
+
+void find_car(car acollection[],int n) {
+
+	//Ввод модели с клавиатуры
+	int size = n;
+	string* branded = new string[size];
+
+	for (int i = 0; i < size; i++) {
+		branded[i] = acollection[i].brand;
+	}
+
+	for (int i = 0; i < size; i++)
+	{
+		cout << branded[i] << endl;
+	}
+
+	delete[] branded;
+	cout << "Модели в ассортименте:" << endl;
+	for (int i = 0; i < n; i++) {
+		cout << acollection[i].brand << endl;
+	}
+
+	cout << "Введите название модели" << endl;
+	string search;
+	cin >> search;
+
+	//Поиск совпадений по бренду
+	cout << "Комплектации данной модели: " << endl;
+	int p = 0;
+	for (int i = 0; i < n; i++) {
+		if (search == acollection[i].brand) {
+			p++;
+		}
+	}
+
+	car* price_array = new car[p];
+	int p1 = 0;
+	for (int i = 0; i < n; i++) {
+		if (search == acollection[i].brand) {
+			price_array[p1] = acollection[i];
+			p1++;
+		}
+	}
+
+	for (int startIndex = 0; startIndex < p1 - 1; startIndex++) {
+		int smallestIndex = startIndex;
+
+		for (int currentIndex = startIndex + 1; currentIndex < p1; currentIndex++) {
+			if ((price_array[currentIndex]).price < (price_array[smallestIndex]).price)
+				smallestIndex = currentIndex;
+		}
+
+		std::swap(price_array[startIndex], price_array[smallestIndex]);
+	}
+
+	cout << "Доступные комплектации данной модели: " << endl;
+
+	for (int i = 0; i < p1; i++) {
+		cout << "(*) " << price_array[i].complect << endl;
+		cout << "Цена данной комлектации: " << int(price_array[i].price) << endl << "-----------------" << endl;
+	}
+
+	delete[] price_array;
+}
+
+// Глобальные переменные
+int N;				// Количество элементов коллекции
+car* collection;	// Указатель на коллекцию элементов 
+
+int main()
+{
+	setlocale(LC_ALL,"ru");
+
+	ifstream infile;
+	infile.open("info.txt");
+	infile >> N;
+	infile.get();
+
+	collection = new car[N];
+	for (int i = 0; i < N; i++) {
+		collection[i] = read_car(infile);
+	}
+	infile.close();
+	for (int i = 0; i < N; i++) {
+		display_car(collection[i]);
+	}
+
+	optimal_car(collection, N);
+
+	find_car(collection,N);
+
+	delete[] collection;
+
+	return 0;
+}
