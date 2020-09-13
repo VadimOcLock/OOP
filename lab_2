@@ -21,7 +21,13 @@ struct car {
 	double koef;
 };
 
-car read_car(ifstream &file) {
+// Глобальные переменные
+int N;				// Количество элементов коллекции
+car* collection;	// Указатель на коллекцию элементов 
+string* branded;	// Указатель на массив марок авто
+
+// Чтение информации о машинах
+car read_car(ifstream& file) {
 
 	car ncar;
 
@@ -37,10 +43,11 @@ car read_car(ifstream &file) {
 	file.get();
 
 	ncar.koef = ncar.power / ncar.price;
-	
+
 	return ncar;
 }
 
+// Отображение информации о автомобиле
 void display_car(car ncar) {
 	cout << "Марка автомобиля: " << ncar.brand << endl
 		<< "Название модели: " << ncar.model << endl
@@ -53,6 +60,7 @@ void display_car(car ncar) {
 		<< "Стоимость в рублях: " << int(ncar.price) << endl << "Отношение Мощности двигателя к Стоимости: " << ncar.koef << endl << "----------------------" << endl;
 }
 
+// Нахождение оптимального коэфициента автомобиля и его отображение
 void optimal_car(car acollection[], int n) {
 	double max = acollection[0].koef;
 	int indexOptimalCar = 0;
@@ -66,38 +74,68 @@ void optimal_car(car acollection[], int n) {
 	display_car(acollection[indexOptimalCar]);
 }
 
-void find_car(car acollection[],int n) {
+// Параметрическая функция сортировки массива (удаление дубликатов)
+int arrayUnique(string* ar, int size) // функция, определяющая элементы массива в единственном экземпляре
+{
+	for (int counter1 = 0; counter1 < size; counter1++)
+	{
+		for (int counter2 = counter1 + 1; counter2 < size; counter2++)
+		{
+			if (ar[counter1] == ar[counter2]) // если найден одинаковый элемент
+			{
+				for (int counter_shift = counter2; counter_shift < size - 1; counter_shift++)
+				{
+					// выполнить сдвиг всех остальных элементов массива на -1, начиная со следующего элемента, после найденного дубля
+					ar[counter_shift] = ar[counter_shift + 1];
+				}
+				size -= 1; // уменьшить размер массива на 1
+
+				if (ar[counter1] == ar[counter2]) // если следующий элемент - дубль
+				{
+					counter2--; // выполнить переход на предыдущий элемент     
+				}
+			}
+		}
+	}
+	return size;
+}
+
+
+// Функция вывода комплектаций автомобиля введеной марки
+void find_car(car acollection[], int n) {
 
 	//Ввод модели с клавиатуры
 	int size = n;
-	string* branded = new string[size];
+	branded = new string[size];
 
 	for (int i = 0; i < size; i++) {
 		branded[i] = acollection[i].brand;
 	}
 
-	for (int i = 0; i < size; i++)
+	cout << "Модели в ассортименте:" << endl;
+	for (int counter1 = 0; counter1 < arrayUnique(branded, n)/*вызов функции отбора значений*/; counter1++)
 	{
-		cout << branded[i] << endl;
+		cout << branded[counter1] << endl; // печать элементов массива
 	}
 
 	delete[] branded;
-	cout << "Модели в ассортименте:" << endl;
-	for (int i = 0; i < n; i++) {
-		cout << acollection[i].brand << endl;
-	}
 
-	cout << "Введите название модели" << endl;
+	cout << "Введите название модели: ";
 	string search;
 	cin >> search;
 
 	//Поиск совпадений по бренду
-	cout << "Комплектации данной модели: " << endl;
+	
 	int p = 0;
 	for (int i = 0; i < n; i++) {
 		if (search == acollection[i].brand) {
 			p++;
 		}
+	}
+
+	if (p == 0) {
+		cout << "Автомобилей по данному запросу не найдено, неверно введена марка автомобиля, попробуйте ещё раз" << endl;
+		return;
 	}
 
 	car* price_array = new car[p];
@@ -130,15 +168,12 @@ void find_car(car acollection[],int n) {
 	delete[] price_array;
 }
 
-// Глобальные переменные
-int N;				// Количество элементов коллекции
-car* collection;	// Указатель на коллекцию элементов 
-
 int main()
 {
-	setlocale(LC_ALL,"ru");
+	setlocale(LC_ALL, "ru");
 
-	ifstream infile;
+	// Поточный ввод информации из файла
+	ifstream infile; 
 	infile.open("info.txt");
 	infile >> N;
 	infile.get();
@@ -148,15 +183,29 @@ int main()
 		collection[i] = read_car(infile);
 	}
 	infile.close();
-	for (int i = 0; i < N; i++) {
-		display_car(collection[i]);
+
+	// Настройка интерфейса взаимодействия пользователя и программы
+	cout << "(*) Чтобы просмотреть информацию о машинах и выбрать оптимальную нажмите (1)" << endl << "(*) Чтобы узнать все комплектации по марке автомобиля нажмите (2)" << endl << "(*) Чтобы закрырыть программу нажмите (0)" << endl;
+
+	int flag;
+	cin >> flag;
+
+	if (flag == 1) {
+
+		for (int i = 0; i < N; i++) {
+			display_car(collection[i]);
+		}
+
+		optimal_car(collection, N);
 	}
+	if (flag == 2)
+		find_car(collection, N);
 
-	optimal_car(collection, N);
-
-	find_car(collection,N);
+	if (flag == 0)
+		return 0;
 
 	delete[] collection;
 
+	system("pause");
 	return 0;
 }
